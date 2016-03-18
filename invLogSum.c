@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 
 /**
@@ -8,8 +9,10 @@
  * Author: Forrest Meade (fmeade)
  * 
  * Description: 
+ *
+ * Help: 
+ * 
  */
-
  int main(int argc, char** argv) {
 
 
