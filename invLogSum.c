@@ -1,5 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "command-line-options.h"
+#include "ibarland-utils.h"
 
 /**
  * invLogSum.c
@@ -28,12 +33,12 @@ struct option_info options[] =
     // Now, the array `settings` contains all the options, in order:
     // either taken from the command-line, or from the default given in `options[]`.
 
-    if(settings[0] < 1) {
+    if(atoi(settings[0]) < 1) {
     	printf("%s\n", "ERROR: Not a positive number.");
     	exit(-1);
     }
 
-    if(settings[1] < 2) {
+    if(atoi(settings[1]) < 2) {
     	printf("%s\n", "ERROR: Not larger than 2.");
     	exit(-1);
     }
