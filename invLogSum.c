@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
+#include <math.h>
 
 #include "command-line-options.h"
 #include "ibarland-utils.h"
@@ -18,6 +20,7 @@
  * Help: 
  * 
  */
+ 
 /* The possible command-line options to the program. 
  */
 struct option_info options[] =
@@ -33,19 +36,35 @@ struct option_info options[] =
     // Now, the array `settings` contains all the options, in order:
     // either taken from the command-line, or from the default given in `options[]`.
 
-    if(atoi(settings[0]) < 1) {
+    const int NUM_THREADS = atoi(settings[0]);
+    const int STOP = atoi(settings[1]);
+
+    if(NUM_THREADS < 1) {
     	printf("%s\n", "ERROR: Not a positive number.");
     	exit(-1);
     }
 
-    if(atoi(settings[1]) < 2) {
+    if(STOP < 2) {
     	printf("%s\n", "ERROR: Not larger than 2.");
     	exit(-1);
     }
 
+    time_t t0, t1;
+    t0 = time_usec(NULL);
 
+    double sum = 0;
+    int i;
 
+    for(i = 2; i < STOP; i++) {
+        sum = sum + (1 / log(i));
+    }
 
+    t1 = time_usec(NULL);
+
+    printf("%s%f\n", "Sum: ", sum);
+    printf("%s%ld%s\n", "Wall Time: ", (long)(t1 - t0), " milliseconds");
+    printf("%s%d\n", "Number of Threads: ", NUM_THREADS);
+    printf("%s%d\n", "Upper Limit of Sum: ", STOP);
 
  	return 0;
  }
