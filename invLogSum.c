@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <math.h>
+#include <pthread.h>
 
 #include "command-line-options.h"
 #include "ibarland-utils.h"
@@ -28,6 +29,30 @@ struct option_info options[] =
     ,{ "stop",  's',  "2000000000", "the upper limit of the sum. " } 
   };
 
+typedef struct {
+    int lower;
+    int upper;
+} bounds;
+
+ void* solve(void* param) {
+
+    bounds* boundaries = (bounds*) param;
+    bounds temp = *boundaries;
+
+    free(&*boundaries);
+
+    double *sum = malloc(sizeof(double));
+
+    int i;
+    for (i = temp.lower; i <= temp.upper; ++i) {
+        *sum = *sum + (1 / log(i));
+    }
+    
+
+    pthread_exit(&*sum);
+
+ }
+
 #define NUM_OPTIONS SIZEOF_ARRAY(options)
 
 
@@ -49,8 +74,13 @@ struct option_info options[] =
     	exit(-1);
     }
 
+
+
     time_t t0, t1;
     t0 = time_usec(NULL);
+
+    
+
 
 
     pthread_t* tids = malloc( NUM_THREADS * sizeof(pthread_t) );   // pthread_t[]
@@ -60,36 +90,49 @@ struct option_info options[] =
     /* get the default attributes */ 
     pthread_attr_init(&attr);
 
+    int split = ((STOP - 1) / NUM_THREADS);
+    int splitCheck = ((STOP - 1) % NUM_THREADS);
     int i;
     /* create the threads */
     for (i = 0;  i < NUM_THREADS;  ++i)  {
-        int* iToPass = malloc(sizeof(int));
-        *iToPass = i;
-        pthread_create(&tids[i], &attr, solve, (void*) &*iToPass); 
+        bounds* itemsToPass = malloc(sizeof(bounds));
+
+        if(i == 0) {
+            itemsToPass->lower = 2;
+        }
+        else {
+            itemsToPass->lower = (split * i) + 1;
+        }
+
+        itemsToPass->upper = (split * (i + 1));
+
+        if ((splitCheck != 0) && (itemsToPass->upper == (STOP-2))) {
+
+            itemsToPass->upper = itemsToPass->upper + 1;
+        }
+
+        pthread_create(&tids[i], &attr, solve, (void*) &*itemsToPass); 
     }
 
 
 
   
     double* result;
+    double sum = 0;
     /* now join on each thread */
-    for (i = 0;  i < numThreads;  ++i) {
+    for (i = 0;  i < NUM_THREADS;  ++i) {
+
         pthread_join( tids[i], (void**) &result ); 
-        printf("Thread %d returned %f.\n", i, *result);
+        sum = sum + *result;
+
         // Now that we've used the result, we can free the memory used to hold the result:
         free(&*result);
     }
 
 
-/* Solves the problem in one stride
 
-    double sum = 0;
-    int i;
 
-    for(i = 2; i < STOP; i++) {
-        sum = sum + (1 / log(i));
-    }
-*/
+
     t1 = time_usec(NULL);
 
     printf("%s%f\n", "Sum: ", sum);
@@ -98,8 +141,4 @@ struct option_info options[] =
     printf("%s%d\n", "Upper Limit of Sum: ", STOP);
 
  	return 0;
- }
-
- void* solve() {
-
  }
