@@ -52,13 +52,44 @@ struct option_info options[] =
     time_t t0, t1;
     t0 = time_usec(NULL);
 
+
+    pthread_t* tids = malloc( NUM_THREADS * sizeof(pthread_t) );   // pthread_t[]
+
+    pthread_attr_t attr; 
+
+    /* get the default attributes */ 
+    pthread_attr_init(&attr);
+
+    int i;
+    /* create the threads */
+    for (i = 0;  i < NUM_THREADS;  ++i)  {
+        int* iToPass = malloc(sizeof(int));
+        *iToPass = i;
+        pthread_create(&tids[i], &attr, solve, (void*) &*iToPass); 
+    }
+
+
+
+  
+    double* result;
+    /* now join on each thread */
+    for (i = 0;  i < numThreads;  ++i) {
+        pthread_join( tids[i], (void**) &result ); 
+        printf("Thread %d returned %f.\n", i, *result);
+        // Now that we've used the result, we can free the memory used to hold the result:
+        free(&*result);
+    }
+
+
+/* Solves the problem in one stride
+
     double sum = 0;
     int i;
 
     for(i = 2; i < STOP; i++) {
         sum = sum + (1 / log(i));
     }
-
+*/
     t1 = time_usec(NULL);
 
     printf("%s%f\n", "Sum: ", sum);
@@ -67,4 +98,8 @@ struct option_info options[] =
     printf("%s%d\n", "Upper Limit of Sum: ", STOP);
 
  	return 0;
+ }
+
+ void* solve() {
+
  }
