@@ -15,13 +15,20 @@
  * Proj3 - Concurrency via Threads
  * Due: Thursday, March 24th, 2016 @ 2p
  * Author: Forrest Meade (fmeade)
- * 
- * Description: 
  *
- * Help: 
+ * Description: A program tha solves the equation below by distributing the work
+ *              across a specified number of threads.
+ *
+ *              stop-1
+ *              ∑ (1/ ln(i))
+ *              i=2
+ *              
+ * Help: http://www.radford.edu/~itec371/2016spring-ibarland/Lectures/c-examples/pthread-example1.c
  * 
  */
  
+
+
 /* The possible command-line options to the program. 
  */
 struct option_info options[] =
@@ -29,11 +36,19 @@ struct option_info options[] =
     ,{ "stop",  's',  "2000000000", "the upper limit of the sum. " } 
   };
 
+
+
+/* struct to pass range to each thread 
+ */
 typedef struct {
-    int lower;
-    int upper;
+    long lower;
+    long upper;
 } bounds;
 
+
+
+/* function for each thread to process
+ */
  void* solve(void* param) {
 
     bounds* boundaries = (bounds*) param;
@@ -48,13 +63,13 @@ typedef struct {
         *sum = *sum + (1 / log(i));
     }
     
-
     pthread_exit(&*sum);
 
  }
 
-#define NUM_OPTIONS SIZEOF_ARRAY(options)
 
+
+#define NUM_OPTIONS SIZEOF_ARRAY(options)
 
  int main(int argc, char** argv) {
  	char** settings = allOptions( argc, argv, NUM_OPTIONS, options );
@@ -81,8 +96,6 @@ typedef struct {
 
     
 
-
-
     pthread_t* tids = malloc( NUM_THREADS * sizeof(pthread_t) );   // pthread_t[]
 
     pthread_attr_t attr; 
@@ -90,7 +103,7 @@ typedef struct {
     /* get the default attributes */ 
     pthread_attr_init(&attr);
 
-    int split = ((STOP - 1) / NUM_THREADS);
+    long split = ((STOP - 1) / NUM_THREADS);
     int splitCheck = ((STOP - 1) % NUM_THREADS);
     int i;
     /* create the threads */
@@ -111,25 +124,34 @@ typedef struct {
             itemsToPass->upper = itemsToPass->upper + 1;
         }
 
-        pthread_create(&tids[i], &attr, solve, (void*) &*itemsToPass); 
-    }
+        int test = pthread_create(&tids[i], &attr, solve, (void*) &*itemsToPass); 
 
+        if (test != 0) {
+            printf("%s\n", "ERROR: pthread_create failed.");
+            exit(-1);
+        }
+    }
 
 
   
     double* result;
     double sum = 0;
+    
     /* now join on each thread */
     for (i = 0;  i < NUM_THREADS;  ++i) {
 
-        pthread_join( tids[i], (void**) &result ); 
+        int test = pthread_join( tids[i], (void**) &result ); 
+
+        if (test != 0) {
+            printf("%s\n", "ERROR: pthread_join failed.");
+            exit(-1);
+        }
+
         sum = sum + *result;
 
         // Now that we've used the result, we can free the memory used to hold the result:
         free(&*result);
     }
-
-
 
 
 

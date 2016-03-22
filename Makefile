@@ -13,4 +13,4 @@ clean:
 	rm -f  invLogSum  *.o
 
 run: invLogSum
-	./invLogSum --num-threads 3 --stop 50
+	./invLogSum --num-threads 2

@@ -8,18 +8,28 @@ import java.math.*;
  * Due: Thursday, March 24th, 2016 @ 2p
  * Author: Forrest Meade (fmeade)
  * 
- * Description: 
+ * Description: A program tha solves the equation below by distributing the work
+ *				across a specified number of threads.
  *
- * Help: 
+ * 				stop-1
+ * 				∑ (1/ ln(i))
+ * 				i=2
+ * 				
+ * Help: http://www.radford.edu/~itec371/2016spring-ibarland/Lectures/c-examples/ZzCounter.java
  * 
  */
 public class InvLogSum {
+
+	public static double sum;
+
+
 
 	/* The possible command-line options to the program. */
 	static CommandLineOption[] options = {
         new CommandLineOption( "num-threads", 'n', "1", "the number of threads to create." ),
         new CommandLineOption( "stop", 's', "2000000000", "the upper limit of the sum." )       
     };
+
 	
 	public static void main(String[] args) {
 
@@ -28,7 +38,7 @@ public class InvLogSum {
         // either taken from the command-line, or from the default given in `options[]`.
 
 		final int NUM_THREADS = Integer.parseInt(settings[0]);
-	    final int STOP = Integer.parseInt(settings[1]);
+	    final long STOP = Integer.parseInt(settings[1]);
 
 	    if(NUM_THREADS < 1) {
 	    	System.out.printf("%s\n", "ERROR: Not a positive number.");
@@ -40,17 +50,44 @@ public class InvLogSum {
 	    	System.exit(-1);
 	    }
 
+
+
 	    long t0, t1;
 
 	    t0 = System.currentTimeMillis();
 
-	    double sum = 0;
 
-	    for(int i = 2; i < STOP; i++) {
-	        sum = sum + (1 / Math.log(i));
+
+
+	    long split = ((STOP - 1) / NUM_THREADS);
+    	long splitCheck = ((STOP - 1) % NUM_THREADS);
+    	long lower, upper;
+
+    	/* create the threads */
+	    for (int i = 0;  i < NUM_THREADS;  ++i)  {
+
+	        if(i == 0) {
+	            lower = 2;
+	        }
+	        else {
+	            lower = (split * i) + 1;
+	        }
+
+	        upper = (split * (i + 1));
+
+	        if ((splitCheck != 0) && (upper == (STOP-2))) {
+
+	            upper = upper + 1;
+	        }
+
+	        LogThread t = new LogThread(lower, upper);
+	        t.start();
 	    }
 
+
+
 	    t1 = System.currentTimeMillis();
+
 
 
 		System.out.printf("%s%f\n", "Sum: ", sum);
@@ -59,4 +96,30 @@ public class InvLogSum {
 	    System.out.printf("%s%d\n", "Upper Limit of Sum: ", STOP);
 	    System.out.printf("%s%d\n", "Available Processors: ",  Runtime.getRuntime().availableProcessors());
 	}
+
+
+	/*
+	 */
+	static class LogThread extends Thread {
+
+		long lowerBound;
+		long upperBound;
+
+		LogThread(long _lowerBound, long _upperBound) {
+			lowerBound = _lowerBound;
+			upperBound = _upperBound;
+		}
+
+		public void run() {
+
+			double _sum = 0.0;
+
+	    	for(long i = lowerBound; i < upperBound; i++) {
+	        	_sum = _sum + (1 / Math.log(i));
+	    	}
+		}
+
+	}
+
+
 }
