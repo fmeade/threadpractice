@@ -19,7 +19,7 @@ import java.math.*;
  */
 public class InvLogSum {
 
-	private static double sum;
+	private static double finalSum;
 
 
 	/* The possible command-line options to the program. */
@@ -54,8 +54,6 @@ public class InvLogSum {
 
 	    t0 = System.nanoTime();
 
-	    sum = 0.0;
-
 
 	    long split = ((STOP - 1) / NUM_THREADS);
     	long splitCheck = ((STOP - 1) % NUM_THREADS);
@@ -86,19 +84,23 @@ public class InvLogSum {
 	        threads[i].start();
 	    }
 
+	    double tempSum = 0.0;
+
 		/* joins the threads and adds thread results */
 	    for (int i = 0;  i < NUM_THREADS;  ++i)  {
 
 	        threads[i].join();
-	        sum = sum + threads[i].answer();
+	        tempSum = tempSum + threads[i].answer();
 	    }	    
+
+	    finalSum = tempSum;
 
 
 	    t1 = System.nanoTime();
 
 
 
-		System.out.printf("%s%f\n", "Sum: ", sum);
+		System.out.printf("%s%f\n", "Sum: ", finalSum);
 	    System.out.printf("%s%d%s\n", "Wall Time: ", (t1 - t0) / 1000000, " milliseconds");
 	    System.out.printf("%s%d\n", "Number of Threads: ", NUM_THREADS);
 	    System.out.printf("%s%d\n", "Upper Limit of Sum: ", STOP);
@@ -107,6 +109,7 @@ public class InvLogSum {
 
 }
 
+
 	/* class to extend thread for natural log summation calculation
 	 */
 	class LogThread extends Thread {
@@ -114,7 +117,7 @@ public class InvLogSum {
 		long lowerBound;
 		long upperBound;
 
-		private double sum;
+		private double sumForThread;
 
 		LogThread(long _lowerBound, long _upperBound) {
 			lowerBound = _lowerBound;
@@ -123,17 +126,17 @@ public class InvLogSum {
 
 		public void run() {
 
-			double _sum = 0.0;
+			double sumSoFar = 0.0;
 
 	    	for(long i = lowerBound; i <= upperBound; i++) {
-	        	_sum = _sum + (1 / Math.log(i));
+	        	sumSoFar = sumSoFar + (1 / Math.log(i));
 	    	}
 
-	    	sum = _sum;
+	    	sumForThread = sumSoFar;
 		}
 
 		public double answer() {
-			return sum;
+			return sumForThread;
 		}
 
 	}
