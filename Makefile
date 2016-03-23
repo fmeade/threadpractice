@@ -12,5 +12,8 @@ ibarland-utils.o: ibarland-utils.c ibarland-utils.h
 clean:
 	rm -f  invLogSum  *.o
 
-run: invLogSum
-	./invLogSum --num-threads 2
+runC: invLogSum
+	./invLogSum --num-threads 4
+
+runJava:
+	javac InvLogSum.java && java InvLogSum --num-threads 4

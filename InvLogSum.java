@@ -1,4 +1,3 @@
-import java.util.*;
 import java.math.*;
 
 /**
@@ -20,8 +19,7 @@ import java.math.*;
  */
 public class InvLogSum {
 
-	public static double sum;
-
+	private static double sum;
 
 
 	/* The possible command-line options to the program. */
@@ -31,7 +29,7 @@ public class InvLogSum {
     };
 
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 
 		String[] settings = CommandLineOption.allOptions( args, options );
         // Now, the array `settings` contains all the options, in order:
@@ -54,17 +52,21 @@ public class InvLogSum {
 
 	    long t0, t1;
 
-	    t0 = System.currentTimeMillis();
+	    t0 = System.nanoTime();
 
-
+	    sum = 0.0;
 
 
 	    long split = ((STOP - 1) / NUM_THREADS);
     	long splitCheck = ((STOP - 1) % NUM_THREADS);
     	long lower, upper;
 
+    	LogThread threads[] = new LogThread[NUM_THREADS];
+
+
+
     	/* create the threads */
-	    for (int i = 0;  i < NUM_THREADS;  ++i)  {
+	    for (int i = 0;  i < NUM_THREADS;  i++)  {
 
 	        if(i == 0) {
 	            lower = 2;
@@ -80,30 +82,39 @@ public class InvLogSum {
 	            upper = upper + 1;
 	        }
 
-	        LogThread t = new LogThread(lower, upper);
-	        t.start();
+	        threads[i] = new LogThread(lower, upper);
+	        threads[i].start();
 	    }
 
+		/* joins the threads and adds thread results */
+	    for (int i = 0;  i < NUM_THREADS;  ++i)  {
+
+	        threads[i].join();
+	        sum = sum + threads[i].answer();
+	    }	    
 
 
-	    t1 = System.currentTimeMillis();
+	    t1 = System.nanoTime();
 
 
 
 		System.out.printf("%s%f\n", "Sum: ", sum);
-	    System.out.printf("%s%d%s\n", "Wall Time: ", (t1 - t0), " milliseconds");
+	    System.out.printf("%s%d%s\n", "Wall Time: ", (t1 - t0) / 1000000, " milliseconds");
 	    System.out.printf("%s%d\n", "Number of Threads: ", NUM_THREADS);
 	    System.out.printf("%s%d\n", "Upper Limit of Sum: ", STOP);
 	    System.out.printf("%s%d\n", "Available Processors: ",  Runtime.getRuntime().availableProcessors());
 	}
 
+}
 
-	/*
+	/* class to extend thread for natural log summation calculation
 	 */
-	static class LogThread extends Thread {
+	class LogThread extends Thread {
 
 		long lowerBound;
 		long upperBound;
+
+		private double sum;
 
 		LogThread(long _lowerBound, long _upperBound) {
 			lowerBound = _lowerBound;
@@ -114,12 +125,15 @@ public class InvLogSum {
 
 			double _sum = 0.0;
 
-	    	for(long i = lowerBound; i < upperBound; i++) {
+	    	for(long i = lowerBound; i <= upperBound; i++) {
 	        	_sum = _sum + (1 / Math.log(i));
 	    	}
+
+	    	sum = _sum;
+		}
+
+		public double answer() {
+			return sum;
 		}
 
 	}
-
-
-}

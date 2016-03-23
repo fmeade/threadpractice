@@ -158,7 +158,7 @@ typedef struct {
     t1 = time_usec(NULL);
 
     printf("%s%f\n", "Sum: ", sum);
-    printf("%s%ld%s\n", "Wall Time: ", (long)(t1 - t0), " milliseconds");
+    printf("%s%ld%s\n", "Wall Time: ", (long)((t1 - t0) / 1000), " milliseconds");
     printf("%s%d\n", "Number of Threads: ", NUM_THREADS);
     printf("%s%d\n", "Upper Limit of Sum: ", STOP);
 
