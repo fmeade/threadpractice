@@ -13,7 +13,10 @@ clean:
 	rm -f  invLogSum  *.o
 
 runC: invLogSum
-	./invLogSum --num-threads 4
+	./invLogSum --num-threads 1; ./invLogSum --num-threads 2; ./invLogSum --num-threads 4; ./invLogSum --num-threads 8
 
-runJava:
-	javac InvLogSum.java && java InvLogSum --num-threads 4
+runJava: compileJava
+	java InvLogSum --num-threads 4
+
+compileJava:
+	javac InvLogSum.java

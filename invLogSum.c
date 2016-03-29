@@ -106,6 +106,7 @@ typedef struct {
     long split = ((STOP - 1) / NUM_THREADS);
     int splitCheck = ((STOP - 1) % NUM_THREADS);
     int i;
+
     /* create the threads */
     for (i = 0;  i < NUM_THREADS;  ++i)  {
         bounds* itemsToPass = malloc(sizeof(bounds));
@@ -121,7 +122,7 @@ typedef struct {
 
         if ((splitCheck != 0) && (itemsToPass->upper == (STOP-2))) {
 
-            itemsToPass->upper = itemsToPass->upper + 1;
+            itemsToPass->upper = itemsToPass->upper + splitCheck;
         }
 
         int test = pthread_create(&tids[i], &attr, solve, (void*) &*itemsToPass); 
@@ -156,9 +157,11 @@ typedef struct {
 
 
     t1 = time_usec(NULL);
+    long wallTime = (long)((t1 - t0) / 1000);
+    
 
     printf("%s%f\n", "Sum: ", sum);
-    printf("%s%ld%s\n", "Wall Time: ", (long)((t1 - t0) / 1000), " milliseconds");
+    printf("%s%ld%s\n", "Wall Time: ", wallTime, " milliseconds");
     printf("%s%d\n", "Number of Threads: ", NUM_THREADS);
     printf("%s%d\n", "Upper Limit of Sum: ", STOP);
 

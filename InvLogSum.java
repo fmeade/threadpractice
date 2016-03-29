@@ -97,11 +97,12 @@ public class InvLogSum {
 
 
 	    t1 = System.nanoTime();
+	    long wallTime = (t1 - t0) / 1000000;
 
 
 
 		System.out.printf("%s%f\n", "Sum: ", finalSum);
-	    System.out.printf("%s%d%s\n", "Wall Time: ", (t1 - t0) / 1000000, " milliseconds");
+	    System.out.printf("%s%d%s\n", "Wall Time: ", wallTime, " milliseconds");
 	    System.out.printf("%s%d\n", "Number of Threads: ", NUM_THREADS);
 	    System.out.printf("%s%d\n", "Upper Limit of Sum: ", STOP);
 	    System.out.printf("%s%d\n", "Available Processors: ",  Runtime.getRuntime().availableProcessors());
